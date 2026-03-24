@@ -1,567 +1,907 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oja — minimal zero-build JavaScript framework</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-        :root {
-            --bg:        #0d1117;
-            --panel:     #161b22;
-            --header:    #1c2128;
-            --hover:     #21262d;
-            --border:    #21262d;
-            --border-2:  #30363d;
-            --text:      #e6edf3;
-            --text-2:    #8b949e;
-            --muted:     #484f58;
-            --accent:    #388bfd;
-            --accent-h:  #58a6ff;
-            --accent-s:  rgba(56,139,253,.12);
-            --success:   #3fb950;
-            --warning:   #d29922;
-            --sans:      'IBM Plex Sans', system-ui, sans-serif;
-            --mono:      'IBM Plex Mono', 'Menlo', monospace;
-            --radius:    6px;
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --header: #1c2128;
+        --hover: #21262d;
+        --border: #21262d;
+        --border-2: #30363d;
+        --text: #e6edf3;
+        --text-2: #8b949e;
+        --muted: #484f58;
+        --accent: #388bfd;
+        --accent-h: #58a6ff;
+        --accent-s: rgba(56, 139, 253, 0.12);
+        --success: #3fb950;
+        --warning: #d29922;
+        --sans: "IBM Plex Sans", system-ui, sans-serif;
+        --mono: "IBM Plex Mono", "Menlo", monospace;
+        --radius: 6px;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        /* Offset anchor scroll so sticky header doesn't cover section titles */
+        scroll-padding-top: 68px;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 14px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* ── Header ─────────────────────────────────────────────────────── */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        height: 52px;
+        background: rgba(13, 17, 23, 0.9);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .nav-link {
+        padding: 5px 12px;
+        font-size: 13px;
+        color: var(--text-2);
+        border-radius: var(--radius);
+        transition:
+          color 0.14s,
+          background 0.14s;
+        font-weight: 500;
+      }
+      .nav-link:hover {
+        color: var(--text);
+        background: var(--hover);
+      }
+
+      .nav-cta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: var(--radius);
+        font-size: 13px;
+        font-weight: 600;
+        transition:
+          background 0.14s,
+          transform 0.1s;
+        margin-left: 6px;
+      }
+      .nav-cta:hover {
+        background: var(--accent-h);
+      }
+      .nav-cta:active {
+        transform: scale(0.97);
+      }
+
+      /* ── Hero ───────────────────────────────────────────────────────── */
+      .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 96px 24px 100px;
+        position: relative;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 900px;
+        height: 600px;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(56, 139, 253, 0.09) 0%,
+          transparent 68%
+        );
+        pointer-events: none;
+        z-index: 0;
+        /* Clip the glow only — not the whole hero */
+        overflow: hidden;
+      }
+
+      .hero > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 14px;
+        background: var(--panel);
+        border: 1px solid var(--border-2);
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-family: var(--mono);
+        color: var(--text-2);
+        margin-bottom: 36px;
+      }
+
+      .hero-eyebrow .dot {
+        color: var(--success);
+      }
+
+      h1 {
+        font-size: clamp(2.6rem, 6vw, 4.2rem);
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        line-height: 1.08;
+        max-width: 780px;
+        margin-bottom: 22px;
+      }
+
+      h1 .accent {
+        color: var(--accent);
+      }
+
+      .hero-sub {
+        font-size: clamp(15px, 2.2vw, 18px);
+        color: var(--text-2);
+        max-width: 500px;
+        margin-bottom: 44px;
+        line-height: 1.65;
+      }
+
+      .hero-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 26px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 600;
+        font-family: var(--sans);
+        transition:
+          background 0.14s,
+          transform 0.1s,
+          box-shadow 0.14s;
+      }
+      .btn-primary:hover {
+        background: var(--accent-h);
+        box-shadow: 0 0 28px rgba(56, 139, 253, 0.28);
+      }
+      .btn-primary:active {
+        transform: scale(0.97);
+      }
+
+      .btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 26px;
+        background: none;
+        color: var(--text);
+        border: 1px solid var(--border-2);
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 500;
+        font-family: var(--sans);
+        transition:
+          border-color 0.14s,
+          background 0.14s;
+      }
+      .btn-ghost:hover {
+        border-color: var(--text-2);
+        background: var(--hover);
+      }
+
+      /* ── Code window ────────────────────────────────────────────────── */
+      .code-window {
+        margin-top: 72px;
+        width: 100%;
+        max-width: 660px;
+        background: var(--panel);
+        border: 1px solid var(--border-2);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow:
+          0 32px 80px rgba(0, 0, 0, 0.55),
+          0 0 0 1px rgba(56, 139, 253, 0.06);
+        text-align: left;
+        /* Ensure shadow is not clipped by any parent */
+        position: relative;
+        z-index: 2;
+      }
+
+      .cw-bar {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 11px 16px;
+        background: var(--header);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .cw-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+      }
+      .cw-r {
+        background: #f85149;
+      }
+      .cw-y {
+        background: #d29922;
+      }
+      .cw-g {
+        background: #3fb950;
+      }
+      .cw-title {
+        margin-left: auto;
+        font-size: 11px;
+        font-family: var(--mono);
+        color: var(--muted);
+      }
+
+      .cw-tabs {
+        display: flex;
+        background: var(--header);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .cw-tab {
+        padding: 7px 16px;
+        font-size: 12px;
+        font-family: var(--mono);
+        color: var(--muted);
+        border-right: 1px solid var(--border);
+        border-bottom: 2px solid transparent;
+      }
+
+      .cw-tab.active {
+        color: var(--text);
+        background: var(--panel);
+        border-bottom-color: var(--accent);
+      }
+
+      pre {
+        padding: 22px 24px;
+        font-family: var(--mono);
+        font-size: 12.5px;
+        line-height: 1.8;
+        color: var(--text);
+        overflow-x: auto;
+      }
+
+      .kw {
+        color: #ff7b72;
+      }
+      .fn {
+        color: #d2a8ff;
+      }
+      .str {
+        color: #a5d6ff;
+      }
+      .cm {
+        color: #6e7681;
+        font-style: italic;
+      }
+      .num {
+        color: #79c0ff;
+      }
+      .var {
+        color: #ffa657;
+      }
+
+      /* ── Feature strip ──────────────────────────────────────────────── */
+      .features {
+        display: flex;
+        justify-content: center;
+        background: var(--panel);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+      }
+
+      .feat {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 32px;
+        border-right: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .feat:last-child {
+        border-right: none;
+      }
+
+      .feat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius);
+        background: var(--hover);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: var(--accent);
+      }
+
+      .feat-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .feat-sub {
+        font-size: 11px;
+        color: var(--text-2);
+        margin-top: 1px;
+      }
+
+      /* ── Section shared ─────────────────────────────────────────────── */
+      .section {
+        padding: 88px 40px;
+        max-width: 1040px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        margin-bottom: 36px;
+      }
+
+      .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .section-tag {
+        font-size: 12px;
+        color: var(--text-2);
+        font-family: var(--mono);
+      }
+
+      /* ── Examples ───────────────────────────────────────────────────── */
+      .ex-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 10px;
+      }
+
+      .ex-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        padding: 20px 20px 18px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        transition:
+          border-color 0.15s,
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+
+      .ex-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--accent-s);
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .ex-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+      }
+      .ex-card:hover::after {
+        opacity: 1;
+      }
+
+      .ex-badge {
+        display: inline-flex;
+        align-self: flex-start;
+        font-size: 10px;
+        font-family: var(--mono);
+        font-weight: 500;
+        color: var(--accent);
+        background: var(--accent-s);
+        padding: 2px 7px;
+        border-radius: 3px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .ex-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        position: relative;
+        z-index: 1;
+      }
+
+      .ex-desc {
+        font-size: 12px;
+        color: var(--text-2);
+        font-family: var(--mono);
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── Philosophy ─────────────────────────────────────────────────── */
+      .philosophy {
+        background: var(--panel);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 88px 40px;
+      }
+
+      .phil-inner {
+        max-width: 1040px;
+        margin: 0 auto;
+      }
+
+      .phil-inner .section-head {
+        margin-bottom: 44px;
+      }
+
+      .role-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 44px;
+      }
+
+      .role-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 24px;
+      }
+
+      .role-pill {
+        display: inline-block;
+        font-size: 10px;
+        font-family: var(--mono);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 3px;
+        margin-bottom: 14px;
+      }
+
+      .role-pill.ui {
+        background: rgba(63, 185, 80, 0.12);
+        color: var(--success);
+      }
+      .role-pill.js {
+        background: rgba(210, 153, 34, 0.12);
+        color: var(--warning);
+      }
+
+      .role-card h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .role-card p {
+        font-size: 13px;
+        color: var(--text-2);
+        line-height: 1.65;
+      }
+
+      .no-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 8px;
+      }
+
+      .no-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 13px;
+        color: var(--text-2);
+      }
+
+      .no-item svg {
+        flex-shrink: 0;
+        color: var(--success);
+      }
+
+      /* ── CTA ────────────────────────────────────────────────────────── */
+      .cta {
+        padding: 100px 40px;
+        text-align: center;
+      }
+
+      .cta h2 {
+        font-size: clamp(1.7rem, 4vw, 2.6rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        margin-bottom: 14px;
+      }
+
+      .cta p {
+        font-size: 16px;
+        color: var(--text-2);
+        margin-bottom: 40px;
+      }
+
+      /* ── Footer ─────────────────────────────────────────────────────── */
+      footer {
+        margin-top: auto;
+        border-top: 1px solid var(--border);
+        padding: 24px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .footer-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .footer-left span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .footer-links {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .footer-links a {
+        font-size: 12px;
+        color: var(--muted);
+        transition: color 0.14s;
+      }
+      .footer-links a:hover {
+        color: var(--text-2);
+      }
+
+      /* ── Animations ─────────────────────────────────────────────── */
+      @keyframes fade-up {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
         }
-
-        html {
-            scroll-behavior: smooth;
-            /* Offset anchor scroll so sticky header doesn't cover section titles */
-            scroll-padding-top: 68px;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        html, body { height: 100%; }
+      }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--sans);
-            font-size: 14px;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+      @keyframes fade-in {
+        from {
+          opacity: 0;
         }
+        to {
+          opacity: 1;
+        }
+      }
 
-        a { color: inherit; text-decoration: none; }
+      @keyframes glow-breathe {
+        0%,
+        100% {
+          opacity: 0.6;
+          transform: translateX(-50%) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: translateX(-50%) scale(1.05);
+        }
+      }
 
-        /* ── Header ─────────────────────────────────────────────────────── */
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      @keyframes float-in {
+        from {
+          opacity: 0;
+          transform: translateY(40px) scale(0.97);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* Hero entrance — staggered children */
+      .hero > * {
+        opacity: 0;
+        animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .hero > *:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .hero > *:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .hero > *:nth-child(3) {
+        animation-delay: 0.35s;
+      }
+      .hero > *:nth-child(4) {
+        animation-delay: 0.5s;
+      }
+      .hero > *:nth-child(5) {
+        animation-delay: 0.6s;
+      }
+      .hero > *:nth-child(6) {
+        animation-delay: 0.8s;
+      }
+
+      .hero::before {
+        animation: glow-breathe 6s ease-in-out infinite;
+      }
+
+      .hero-eyebrow .dot {
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      /* Code window floats in last */
+      .code-window {
+        animation: float-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.85s both;
+      }
+
+      /* Header slides down */
+      header {
+        animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      /* Scroll-reveal — elements start hidden, JS adds .visible */
+      .reveal {
+        opacity: 0;
+        transform: translateY(32px);
+        transition:
+          opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Stagger example cards */
+      .ex-card.reveal {
+        transition-delay: calc(var(--i, 0) * 70ms);
+      }
+
+      /* Stagger feature items */
+      .feat.reveal {
+        transition-delay: calc(var(--i, 0) * 80ms);
+      }
+
+      /* Stagger no-items */
+      .no-item.reveal {
+        transition-delay: calc(var(--i, 0) * 60ms);
+      }
+
+      /* Respect reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-delay: 0ms !important;
+          transition-duration: 0.01ms !important;
+        }
+        .reveal {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      @media (max-width: 720px) {
         header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            height: 52px;
-            background: rgba(13,17,23,.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
+          padding: 0 16px;
         }
-
-        .logo { display: flex; align-items: center; gap: 8px; }
-
-        .header-nav { display: flex; align-items: center; gap: 4px; }
-
-        .nav-link {
-            padding: 5px 12px;
-            font-size: 13px;
-            color: var(--text-2);
-            border-radius: var(--radius);
-            transition: color .14s, background .14s;
-            font-weight: 500;
-        }
-        .nav-link:hover { color: var(--text); background: var(--hover); }
-
-        .nav-cta {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            background: var(--accent);
-            color: #fff;
-            border-radius: var(--radius);
-            font-size: 13px;
-            font-weight: 600;
-            transition: background .14s, transform .1s;
-            margin-left: 6px;
-        }
-        .nav-cta:hover  { background: var(--accent-h); }
-        .nav-cta:active { transform: scale(.97); }
-
-        /* ── Hero ───────────────────────────────────────────────────────── */
         .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 96px 24px 100px;
-            position: relative;
+          padding: 72px 16px 64px;
         }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 900px;
-            height: 600px;
-            background: radial-gradient(ellipse at center, rgba(56,139,253,.09) 0%, transparent 68%);
-            pointer-events: none;
-            z-index: 0;
-            /* Clip the glow only — not the whole hero */
-            overflow: hidden;
-        }
-
-        .hero > * { position: relative; z-index: 1; }
-
-        .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 14px;
-            background: var(--panel);
-            border: 1px solid var(--border-2);
-            border-radius: 20px;
-            font-size: 11.5px;
-            font-family: var(--mono);
-            color: var(--text-2);
-            margin-bottom: 36px;
-        }
-
-        .hero-eyebrow .dot { color: var(--success); }
-
-        h1 {
-            font-size: clamp(2.6rem, 6vw, 4.2rem);
-            font-weight: 700;
-            letter-spacing: -.05em;
-            line-height: 1.08;
-            max-width: 780px;
-            margin-bottom: 22px;
-        }
-
-        h1 .accent { color: var(--accent); }
-
-        .hero-sub {
-            font-size: clamp(15px, 2.2vw, 18px);
-            color: var(--text-2);
-            max-width: 500px;
-            margin-bottom: 44px;
-            line-height: 1.65;
-        }
-
-        .hero-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 13px 26px;
-            background: var(--accent);
-            color: #fff;
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 600;
-            font-family: var(--sans);
-            transition: background .14s, transform .1s, box-shadow .14s;
-        }
-        .btn-primary:hover  { background: var(--accent-h); box-shadow: 0 0 28px rgba(56,139,253,.28); }
-        .btn-primary:active { transform: scale(.97); }
-
-        .btn-ghost {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 13px 26px;
-            background: none;
-            color: var(--text);
-            border: 1px solid var(--border-2);
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 500;
-            font-family: var(--sans);
-            transition: border-color .14s, background .14s;
-        }
-        .btn-ghost:hover { border-color: var(--text-2); background: var(--hover); }
-
-        /* ── Code window ────────────────────────────────────────────────── */
-        .code-window {
-            margin-top: 72px;
-            width: 100%;
-            max-width: 660px;
-            background: var(--panel);
-            border: 1px solid var(--border-2);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 32px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(56,139,253,.06);
-            text-align: left;
-            /* Ensure shadow is not clipped by any parent */
-            position: relative;
-            z-index: 2;
-        }
-
-        .cw-bar {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 11px 16px;
-            background: var(--header);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .cw-dot { width: 11px; height: 11px; border-radius: 50%; }
-        .cw-r { background: #f85149; }
-        .cw-y { background: #d29922; }
-        .cw-g { background: #3fb950; }
-        .cw-title { margin-left: auto; font-size: 11px; font-family: var(--mono); color: var(--muted); }
-
-        .cw-tabs {
-            display: flex;
-            background: var(--header);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .cw-tab {
-            padding: 7px 16px;
-            font-size: 12px;
-            font-family: var(--mono);
-            color: var(--muted);
-            border-right: 1px solid var(--border);
-            border-bottom: 2px solid transparent;
-        }
-
-        .cw-tab.active { color: var(--text); background: var(--panel); border-bottom-color: var(--accent); }
-
-        pre {
-            padding: 22px 24px;
-            font-family: var(--mono);
-            font-size: 12.5px;
-            line-height: 1.8;
-            color: var(--text);
-            overflow-x: auto;
-        }
-
-        .kw  { color: #ff7b72; }
-        .fn  { color: #d2a8ff; }
-        .str { color: #a5d6ff; }
-        .cm  { color: #6e7681; font-style: italic; }
-        .num { color: #79c0ff; }
-        .var { color: #ffa657; }
-
-        /* ── Feature strip ──────────────────────────────────────────────── */
         .features {
-            display: flex;
-            justify-content: center;
-            background: var(--panel);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            overflow-x: auto;
+          flex-direction: column;
         }
-
         .feat {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 20px 32px;
-            border-right: 1px solid var(--border);
-            flex-shrink: 0;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+          padding: 16px 20px;
         }
-        .feat:last-child { border-right: none; }
-
-        .feat-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: var(--radius);
-            background: var(--hover);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            color: var(--accent);
+        .feat:last-child {
+          border-bottom: none;
         }
-
-        .feat-label { font-size: 13px; font-weight: 600; color: var(--text); }
-        .feat-sub   { font-size: 11px; color: var(--text-2); margin-top: 1px; }
-
-        /* ── Section shared ─────────────────────────────────────────────── */
         .section {
-            padding: 88px 40px;
-            max-width: 1040px;
-            margin: 0 auto;
-            width: 100%;
+          padding: 56px 16px;
         }
-
-        .section-head {
-            display: flex;
-            align-items: baseline;
-            gap: 14px;
-            margin-bottom: 36px;
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -.03em;
-        }
-
-        .section-tag {
-            font-size: 12px;
-            color: var(--text-2);
-            font-family: var(--mono);
-        }
-
-        /* ── Examples ───────────────────────────────────────────────────── */
-        .ex-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-            gap: 10px;
-        }
-
-        .ex-card {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            padding: 20px 20px 18px;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: border-color .15s, transform .15s, box-shadow .15s;
-        }
-
-        .ex-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--accent-s);
-            opacity: 0;
-            transition: opacity .15s;
-        }
-
-        .ex-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 28px rgba(0,0,0,.35);
-        }
-        .ex-card:hover::after { opacity: 1; }
-
-        .ex-badge {
-            display: inline-flex;
-            align-self: flex-start;
-            font-size: 10px;
-            font-family: var(--mono);
-            font-weight: 500;
-            color: var(--accent);
-            background: var(--accent-s);
-            padding: 2px 7px;
-            border-radius: 3px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .ex-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text);
-            position: relative;
-            z-index: 1;
-        }
-
-        .ex-desc {
-            font-size: 12px;
-            color: var(--text-2);
-            font-family: var(--mono);
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ── Philosophy ─────────────────────────────────────────────────── */
         .philosophy {
-            background: var(--panel);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            padding: 88px 40px;
+          padding: 56px 16px;
         }
-
-        .phil-inner {
-            max-width: 1040px;
-            margin: 0 auto;
-        }
-
-        .phil-inner .section-head { margin-bottom: 44px; }
-
-        .role-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 44px;
-        }
-
-        .role-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-        }
-
-        .role-pill {
-            display: inline-block;
-            font-size: 10px;
-            font-family: var(--mono);
-            font-weight: 600;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            padding: 3px 10px;
-            border-radius: 3px;
-            margin-bottom: 14px;
-        }
-
-        .role-pill.ui { background: rgba(63,185,80,.12); color: var(--success); }
-        .role-pill.js { background: rgba(210,153,34,.12); color: var(--warning); }
-
-        .role-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-        .role-card p  { font-size: 13px; color: var(--text-2); line-height: 1.65; }
-
-        .no-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-            gap: 8px;
-        }
-
-        .no-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 16px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 13px;
-            color: var(--text-2);
-        }
-
-        .no-item svg { flex-shrink: 0; color: var(--success); }
-
-        /* ── CTA ────────────────────────────────────────────────────────── */
         .cta {
-            padding: 100px 40px;
-            text-align: center;
+          padding: 64px 16px;
         }
-
-        .cta h2 {
-            font-size: clamp(1.7rem, 4vw, 2.6rem);
-            font-weight: 700;
-            letter-spacing: -.04em;
-            margin-bottom: 14px;
-        }
-
-        .cta p {
-            font-size: 16px;
-            color: var(--text-2);
-            margin-bottom: 40px;
-        }
-
-        /* ── Footer ─────────────────────────────────────────────────────── */
         footer {
-            margin-top: auto;
-            border-top: 1px solid var(--border);
-            padding: 24px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
+          padding: 20px 16px;
+          flex-direction: column;
+          align-items: flex-start;
         }
-
-        .footer-left { display: flex; align-items: center; gap: 10px; }
-        .footer-left span { font-size: 12px; color: var(--muted); }
-
-        .footer-links { display: flex; align-items: center; gap: 20px; }
-        .footer-links a { font-size: 12px; color: var(--muted); transition: color .14s; }
-        .footer-links a:hover { color: var(--text-2); }
-
-        @media (max-width: 720px) {
-            header       { padding: 0 16px; }
-            .hero        { padding: 72px 16px 64px; }
-            .features    { flex-direction: column; }
-            .feat        { border-right: none; border-bottom: 1px solid var(--border); padding: 16px 20px; }
-            .feat:last-child { border-bottom: none; }
-            .section     { padding: 56px 16px; }
-            .philosophy  { padding: 56px 16px; }
-            .cta         { padding: 64px 16px; }
-            footer       { padding: 20px 16px; flex-direction: column; align-items: flex-start; }
-            .role-grid   { grid-template-columns: 1fr; }
-            .header-nav .nav-link { display: none; }
+        .role-grid {
+          grid-template-columns: 1fr;
         }
+        .header-nav .nav-link {
+          display: none;
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <header>
+      <a href="/" class="logo">
+        <img
+          src="assets/oja_name.png"
+          alt="Oja"
+          height="18"
+          style="display: block; flex-shrink: 0"
+        />
+      </a>
 
-<header>
-    <a href="/" class="logo">
-        <img src="assets/oja_name.png" alt="Oja" height="18" style="display:block;flex-shrink:0;">
-    </a>
-
-
-    <nav class="header-nav">
+      <nav class="header-nav">
         <a href="#examples" class="nav-link">Examples</a>
-        <a href="#why"      class="nav-link">Why Oja</a>
-        <a href="https://github.com/agberohq/oja" target="_blank" rel="noopener" class="nav-link">GitHub</a>
+        <a href="#why" class="nav-link">Why Oja</a>
+        <a
+          href="https://github.com/agberohq/oja"
+          target="_blank"
+          rel="noopener"
+          class="nav-link"
+          >GitHub</a
+        >
         <a href="playground/" class="nav-cta">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.5l8 4.5-8 4.5V1.5z"/></svg>
-            Open Playground
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <path d="M2 1.5l8 4.5-8 4.5V1.5z" />
+          </svg>
+          Open Playground
         </a>
-    </nav>
-</header>
+      </nav>
+    </header>
 
-<section class="hero">
-    <div class="hero-eyebrow">
-        <span class="dot">●</span> v0.0.10 &nbsp;·&nbsp; zero-build &nbsp;·&nbsp; no node_modules &nbsp;·&nbsp; no compiler
-    </div>
+    <section class="hero">
+      <div class="hero-eyebrow">
+        <span class="dot">●</span> v0.0.10 &nbsp;·&nbsp; zero-build
+        &nbsp;·&nbsp; no node_modules &nbsp;·&nbsp; no compiler
+      </div>
 
-    <h1> <img src="assets/oja_icon.png" alt="Oja" height="150" style="display:block;flex-shrink:0;"> </h1>
-    <h1>Build real SPAs with<br><span class="accent">plain HTML files</span></h1>
+      <h1>
+        <img
+          src="assets/oja_icon.png"
+          alt="Oja"
+          height="150"
+          style="display: block; flex-shrink: 0"
+        />
+      </h1>
+      <h1>
+        Build real SPAs with<br /><span class="accent">plain HTML files</span>
+      </h1>
 
-    <p class="hero-sub">
+      <p class="hero-sub">
         Oja is a minimal JavaScript framework. No build step. No virtual DOM.
         Drop files in, open a browser, it works.
-    </p>
+      </p>
 
-    <div class="hero-actions">
+      <div class="hero-actions">
         <a href="playground/" class="btn-primary">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor"><path d="M2.5 2l9 4.5-9 4.5V2z"/></svg>
-            Open Playground
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor">
+            <path d="M2.5 2l9 4.5-9 4.5V2z" />
+          </svg>
+          Open Playground
         </a>
-        <a href="https://github.com/agberohq/oja" target="_blank" rel="noopener" class="btn-ghost">
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            View on GitHub
+        <a
+          href="https://github.com/agberohq/oja"
+          target="_blank"
+          rel="noopener"
+          class="btn-ghost"
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            />
+          </svg>
+          View on GitHub
         </a>
-    </div>
+      </div>
 
-    <div class="code-window">
+      <div class="code-window">
         <div class="cw-bar">
-            <div class="cw-dot cw-r"></div>
-            <div class="cw-dot cw-y"></div>
-            <div class="cw-dot cw-g"></div>
-            <span class="cw-title">app.js</span>
+          <div class="cw-dot cw-r"></div>
+          <div class="cw-dot cw-y"></div>
+          <div class="cw-dot cw-g"></div>
+          <span class="cw-title">app.js</span>
         </div>
         <div class="cw-tabs">
-            <div class="cw-tab active">app.js</div>
-            <div class="cw-tab">index.html</div>
+          <div class="cw-tab active">app.js</div>
+          <div class="cw-tab">index.html</div>
         </div>
         <pre><span class="kw">import</span> { <span class="fn">state</span>, <span class="fn">effect</span>, <span class="fn">context</span>, <span class="fn">Router</span>, <span class="fn">Out</span>, <span class="fn">layout</span> }
     <span class="kw">from</span> <span class="str">'https://cdn.jsdelivr.net/npm/@agberohq/oja@latest/build/oja.core.esm.js'</span>;
@@ -577,147 +917,366 @@
 <span class="var">router</span>.<span class="fn">Get</span>(<span class="str">'/'</span>,      <span class="fn">Out</span>.c(<span class="str">'pages/home.html'</span>,  { tasks, user }));
 <span class="var">router</span>.<span class="fn">Get</span>(<span class="str">'/tasks'</span>, <span class="fn">Out</span>.c(<span class="str">'pages/tasks.html'</span>, { tasks }));
 <span class="var">router</span>.<span class="fn">start</span>(<span class="str">'/'</span>);  <span class="cm">// No build step. No compiler. Just this.</span></pre>
-    </div>
-</section>
+      </div>
+    </section>
 
-<div class="features">
-    <div class="feat">
+    <div class="features">
+      <div class="feat reveal" style="--i: 0">
         <div class="feat-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4 6 2 8 4 10"/><polyline points="12 6 14 8 12 10"/><line x1="9" y1="4" x2="7" y2="12"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <polyline points="4 6 2 8 4 10" />
+            <polyline points="12 6 14 8 12 10" />
+            <line x1="9" y1="4" x2="7" y2="12" />
+          </svg>
         </div>
-        <div><div class="feat-label">No build step</div><div class="feat-sub">Open in browser, it works</div></div>
-    </div>
-    <div class="feat">
+        <div>
+          <div class="feat-label">No build step</div>
+          <div class="feat-sub">Open in browser, it works</div>
+        </div>
+      </div>
+      <div class="feat reveal" style="--i: 1">
         <div class="feat-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8h3l2-5 3 10 2-5h4"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M1 8h3l2-5 3 10 2-5h4" />
+          </svg>
         </div>
-        <div><div class="feat-label">Fine-grained reactivity</div><div class="feat-sub">Only what changed updates</div></div>
-    </div>
-    <div class="feat">
+        <div>
+          <div class="feat-label">Fine-grained reactivity</div>
+          <div class="feat-sub">Only what changed updates</div>
+        </div>
+      </div>
+      <div class="feat reveal" style="--i: 2">
         <div class="feat-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2M11 3V2M2 7h12"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <rect x="2" y="3" width="12" height="10" rx="1" />
+            <path d="M5 3V2M11 3V2M2 7h12" />
+          </svg>
         </div>
-        <div><div class="feat-label">Plain HTML components</div><div class="feat-sub">Open in any editor</div></div>
-    </div>
-    <div class="feat">
+        <div>
+          <div class="feat-label">Plain HTML components</div>
+          <div class="feat-sub">Open in any editor</div>
+        </div>
+      </div>
+      <div class="feat reveal" style="--i: 3">
         <div class="feat-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <circle cx="8" cy="8" r="6" />
+            <path d="M8 5v3l2 2" />
+          </svg>
         </div>
-        <div><div class="feat-label">Go-style router</div><div class="feat-sub">Middleware · groups · guards</div></div>
-    </div>
-    <div class="feat">
+        <div>
+          <div class="feat-label">Go-style router</div>
+          <div class="feat-sub">Middleware · groups · guards</div>
+        </div>
+      </div>
+      <div class="feat reveal" style="--i: 4">
         <div class="feat-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10l4-4 3 3 5-5"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M2 10l4-4 3 3 5-5" />
+          </svg>
         </div>
-        <div><div class="feat-label">VFS + offline-first</div><div class="feat-sub">Works after first visit</div></div>
+        <div>
+          <div class="feat-label">VFS + offline-first</div>
+          <div class="feat-sub">Works after first visit</div>
+        </div>
+      </div>
     </div>
-</div>
 
-<section class="section" id="examples">
-    <div class="section-head">
+    <section class="section" id="examples">
+      <div class="section-head reveal">
         <h2 class="section-title">Examples</h2>
         <span class="section-tag">click any to open in the playground</span>
-    </div>
-    <div class="ex-grid">
-        <a href="playground/?example=starter" class="ex-card">
-            <span class="ex-badge">beginner</span>
-            <span class="ex-name">Starter</span>
-            <span class="ex-desc">state · effect · component</span>
+      </div>
+      <div class="ex-grid">
+        <a
+          href="playground/?example=starter"
+          class="ex-card reveal"
+          style="--i: 0"
+        >
+          <span class="ex-badge">beginner</span>
+          <span class="ex-name">Starter</span>
+          <span class="ex-desc">state · effect · component</span>
         </a>
-        <a href="playground/?example=todo" class="ex-card">
-            <span class="ex-badge">reactive</span>
-            <span class="ex-name">Todo</span>
-            <span class="ex-desc">list · derived · batch</span>
+        <a
+          href="playground/?example=todo"
+          class="ex-card reveal"
+          style="--i: 1"
+        >
+          <span class="ex-badge">reactive</span>
+          <span class="ex-name">Todo</span>
+          <span class="ex-desc">list · derived · batch</span>
         </a>
-        <a href="playground/?example=router" class="ex-card">
-            <span class="ex-badge">routing</span>
-            <span class="ex-name">Router</span>
-            <span class="ex-desc">multi-page SPA · middleware</span>
+        <a
+          href="playground/?example=router"
+          class="ex-card reveal"
+          style="--i: 2"
+        >
+          <span class="ex-badge">routing</span>
+          <span class="ex-name">Router</span>
+          <span class="ex-desc">multi-page SPA · middleware</span>
         </a>
-        <a href="playground/?example=guestbook" class="ex-card">
-            <span class="ex-badge">forms</span>
-            <span class="ex-name">Guestbook</span>
-            <span class="ex-desc">form · validation · context</span>
+        <a
+          href="playground/?example=guestbook"
+          class="ex-card reveal"
+          style="--i: 3"
+        >
+          <span class="ex-badge">forms</span>
+          <span class="ex-name">Guestbook</span>
+          <span class="ex-desc">form · validation · context</span>
         </a>
-        <a href="playground/?example=channel" class="ex-card">
-            <span class="ex-badge">async</span>
-            <span class="ex-name">Channel</span>
-            <span class="ex-desc">async pipeline · go()</span>
+        <a
+          href="playground/?example=channel"
+          class="ex-card reveal"
+          style="--i: 4"
+        >
+          <span class="ex-badge">async</span>
+          <span class="ex-name">Channel</span>
+          <span class="ex-desc">async pipeline · go()</span>
         </a>
-        <a href="playground/?example=game" class="ex-card">
-            <span class="ex-badge">advanced</span>
-            <span class="ex-name">Rhyme Rush</span>
-            <span class="ex-desc">game loop · AI integration</span>
+        <a
+          href="playground/?example=game"
+          class="ex-card reveal"
+          style="--i: 5"
+        >
+          <span class="ex-badge">advanced</span>
+          <span class="ex-name">Rhyme Rush</span>
+          <span class="ex-desc">game loop · AI integration</span>
         </a>
-        <a href="playground/?example=twitter" class="ex-card">
-            <span class="ex-badge">full app</span>
-            <span class="ex-name">Twitter clone</span>
-            <span class="ex-desc">SPA · auth · 17 files</span>
+        <a
+          href="playground/?example=twitter"
+          class="ex-card reveal"
+          style="--i: 6"
+        >
+          <span class="ex-badge">full app</span>
+          <span class="ex-name">Twitter clone</span>
+          <span class="ex-desc">SPA · auth · 17 files</span>
         </a>
-        <a href="playground/" class="ex-card">
-            <span class="ex-badge">blank</span>
-            <span class="ex-name">Start from scratch</span>
-            <span class="ex-desc">empty workspace</span>
+        <a href="playground/" class="ex-card reveal" style="--i: 7">
+          <span class="ex-badge">blank</span>
+          <span class="ex-name">Start from scratch</span>
+          <span class="ex-desc">empty workspace</span>
         </a>
-    </div>
-</section>
+      </div>
+    </section>
 
-<section class="philosophy" id="why">
-    <div class="phil-inner">
-        <div class="section-head">
-            <h2 class="section-title">Why Oja exists</h2>
-            <span class="section-tag">the insight that shaped it</span>
+    <section class="philosophy" id="why">
+      <div class="phil-inner">
+        <div class="section-head reveal">
+          <h2 class="section-title">Why Oja exists</h2>
+          <span class="section-tag">the insight that shaped it</span>
         </div>
 
         <div class="role-grid">
-            <div class="role-card">
-                <div class="role-pill ui">UI developer</div>
-                <h3>Opens .html and .css only</h3>
-                <p>Components are plain HTML files. A UI developer can open them directly in a browser, edit them, and see results — no JSX, no compilation, no tooling required.</p>
-            </div>
-            <div class="role-card">
-                <div class="role-pill js">JS developer</div>
-                <h3>Opens .js only, never writes HTML strings</h3>
-                <p>The JS supplies data and wires events. It never builds HTML. The component file is the template — no template literals, no render functions, no virtual DOM.</p>
-            </div>
+          <div class="role-card reveal">
+            <div class="role-pill ui">UI developer</div>
+            <h3>Opens .html and .css only</h3>
+            <p>
+              Components are plain HTML files. A UI developer can open them
+              directly in a browser, edit them, and see results — no JSX, no
+              compilation, no tooling required.
+            </p>
+          </div>
+          <div class="role-card reveal">
+            <div class="role-pill js">JS developer</div>
+            <h3>Opens .js only, never writes HTML strings</h3>
+            <p>
+              The JS supplies data and wires events. It never builds HTML. The
+              component file is the template — no template literals, no render
+              functions, no virtual DOM.
+            </p>
+          </div>
         </div>
 
         <div class="no-list">
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No build step — ever</div>
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No virtual DOM</div>
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No TypeScript required</div>
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No CSS-in-JS</div>
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No bundler</div>
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No node_modules</div>
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No two-way binding</div>
-            <div class="no-item"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7l3.5 3.5L12 3"/></svg>No server-side rendering</div>
+          <div class="no-item reveal" style="--i: 0">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No build step — ever
+          </div>
+          <div class="no-item reveal" style="--i: 1">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No virtual DOM
+          </div>
+          <div class="no-item reveal" style="--i: 2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No TypeScript required
+          </div>
+          <div class="no-item reveal" style="--i: 3">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No CSS-in-JS
+          </div>
+          <div class="no-item reveal" style="--i: 4">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No bundler
+          </div>
+          <div class="no-item reveal" style="--i: 5">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No node_modules
+          </div>
+          <div class="no-item reveal" style="--i: 6">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No two-way binding
+          </div>
+          <div class="no-item reveal" style="--i: 7">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M2 7l3.5 3.5L12 3" /></svg
+            >No server-side rendering
+          </div>
         </div>
-    </div>
-</section>
+      </div>
+    </section>
 
-<section class="cta">
-    <h2>Ready to build without the overhead?</h2>
-    <p>The playground loads in seconds. No install. No signup. No build step.</p>
-    <div class="hero-actions">
+    <section class="cta">
+      <h2 class="reveal">Ready to build without the overhead?</h2>
+      <p class="reveal">
+        The playground loads in seconds. No install. No signup. No build step.
+      </p>
+      <div class="hero-actions">
         <a href="playground/" class="btn-primary">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor"><path d="M2.5 2l9 4.5-9 4.5V2z"/></svg>
-            Open Playground
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor">
+            <path d="M2.5 2l9 4.5-9 4.5V2z" />
+          </svg>
+          Open Playground
         </a>
-        <a href="playground/?example=twitter" class="btn-ghost">See the Twitter clone</a>
-    </div>
-</section>
+        <a href="playground/?example=twitter" class="btn-ghost"
+          >See the Twitter clone</a
+        >
+      </div>
+    </section>
 
-<footer>
-    <div class="footer-left">
-        <img src="assets/oja_icon.png" alt="Oja" height="22" style="display:block;opacity:.7;">
+    <footer>
+      <div class="footer-left">
+        <img
+          src="assets/oja_icon.png"
+          alt="Oja"
+          height="22"
+          style="display: block; opacity: 0.7"
+        />
         <span>Oja — MIT License</span>
-    </div>
-    <div class="footer-links">
-        <a href="https://github.com/agberohq/oja" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/agberohq/oja" target="_blank" rel="noopener"
+          >GitHub</a
+        >
         <a href="playground/">Playground</a>
         <a href="playground/?example=starter">Get started</a>
-    </div>
-</footer>
+      </div>
+    </footer>
 
-</body>
+    <script>
+      // Scroll-reveal via IntersectionObserver
+      const revealEls = document.querySelectorAll(".reveal");
+      if (revealEls.length) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add("visible");
+                io.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
+        );
+        revealEls.forEach((el) => io.observe(el));
+      }
+    </script>
+  </body>
 </html>

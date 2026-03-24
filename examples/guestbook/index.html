@@ -58,7 +58,9 @@
     </div>
 </div>
 <script type="module">
-    import { form, each, notify, context } from 'https://cdn.jsdelivr.net/npm/@agberohq/oja@latest/build/oja.core.esm.js';
+    import {  each, context } from 'https://cdn.jsdelivr.net/npm/@agberohq/oja@latest/build/oja.core.esm.js';
+    import { form,  notify } from 'https://cdn.jsdelivr.net/npm/@agberohq/oja@latest/build/oja.full.esm.js';
+
 
     const COLORS = ['background:#f9a825','background:#66bb6a','background:#42a5f5','background:#ab47bc','background:#ef5350'];
     const [entries, setEntries] = context('entries', []);

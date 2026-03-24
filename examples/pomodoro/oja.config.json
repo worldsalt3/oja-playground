@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "name": "pomodoro",
+  "vfs": {
+    "files": ["index.html"]
+  }
+}

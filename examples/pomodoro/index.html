@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pomodoro</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agberohq/oja@latest/build/oja.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0f0f0f;
+        color: #e8e8e8;
+        font-family: system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .app {
+        text-align: center;
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .sub {
+        color: #555;
+        font-size: 12px;
+        margin-bottom: 32px;
+      }
+
+      /* mode tabs */
+      .modes {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        margin-bottom: 32px;
+      }
+      .mode-btn {
+        padding: 8px 18px;
+        border-radius: 20px;
+        border: 1px solid #2a2a2a;
+        background: #141414;
+        color: #888;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.25s;
+      }
+      .mode-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-bg);
+      }
+
+      /* ring */
+      .ring-wrap {
+        position: relative;
+        width: 240px;
+        height: 240px;
+        margin: 0 auto 32px;
+      }
+      .ring-wrap svg {
+        transform: rotate(-90deg);
+      }
+      .ring-bg {
+        fill: none;
+        stroke: #1e1e1e;
+        stroke-width: 6;
+      }
+      .ring-fg {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 6;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.4s ease;
+      }
+      .time-display {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .time {
+        font-size: 52px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        line-height: 1;
+      }
+      .label {
+        font-size: 11px;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 8px;
+      }
+
+      /* controls */
+      .controls {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+      .ctrl-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 1px solid #2a2a2a;
+        background: #141414;
+        color: #e8e8e8;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+      .ctrl-btn:hover {
+        border-color: #555;
+        background: #1a1a1a;
+      }
+      .ctrl-btn.primary {
+        width: 64px;
+        height: 64px;
+        background: #e8e8e8;
+        color: #0f0f0f;
+        border: none;
+        font-size: 22px;
+      }
+      .ctrl-btn.primary:hover {
+        opacity: 0.85;
+      }
+
+      /* session dots */
+      .sessions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid #2a2a2a;
+        transition: all 0.3s;
+      }
+      .dot.filled {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .hint {
+        font-size: 11px;
+        color: #333;
+        margin-top: 16px;
+      }
+      kbd {
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 3px;
+        padding: 1px 5px;
+        font-size: 10px;
+      }
+
+      /* theme vars by mode */
+      :root {
+        --accent: #e05555;
+        --accent-bg: #1f0d0d;
+      }
+      body.short-break {
+        --accent: #42a5f5;
+        --accent-bg: #0d1520;
+      }
+      body.long-break {
+        --accent: #66bb6a;
+        --accent-bg: #0d1f0d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <h1>Pomodoro</h1>
+      <p class="sub">Stay focused. Take breaks. Repeat.</p>
+
+      <div class="modes">
+        <button class="mode-btn active" data-mode="work">Focus</button>
+        <button class="mode-btn" data-mode="short">Short Break</button>
+        <button class="mode-btn" data-mode="long">Long Break</button>
+      </div>
+
+      <div class="ring-wrap">
+        <svg viewBox="0 0 240 240" width="240" height="240">
+          <circle class="ring-bg" cx="120" cy="120" r="108" />
+          <circle class="ring-fg" id="ring" cx="120" cy="120" r="108" />
+        </svg>
+        <div class="time-display">
+          <div class="time" id="time">25:00</div>
+          <div class="label" id="label">focus</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="reset" title="Reset (R)">↺</button>
+        <button
+          class="ctrl-btn primary"
+          id="toggle"
+          title="Start / Pause (Space)"
+        >
+          ▶
+        </button>
+        <button class="ctrl-btn" id="skip" title="Skip (S)">⏭</button>
+      </div>
+
+      <div class="sessions" id="sessions">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <p class="hint">
+        <kbd>Space</kbd> start / pause · <kbd>R</kbd> reset · <kbd>S</kbd> skip
+      </p>
+    </div>
+
+    <script type="module">
+      import {
+        state,
+        effect,
+        derived,
+        notify,
+        keys,
+      } from "https://cdn.jsdelivr.net/npm/@agberohq/oja@latest/build/oja.core.esm.js";
+
+      // durations in seconds
+      const DURATIONS = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
+      const LABELS = {
+        work: "focus",
+        short: "short break",
+        long: "long break",
+      };
+      const GOAL = 4; // sessions before long break
+
+      // --- state ---
+      const [mode, setMode] = state("work"); // 'work' | 'short' | 'long'
+      const [remaining, setRemain] = state(DURATIONS.work);
+      const [running, setRunning] = state(false);
+      const [sessions, setSessions] = state(0);
+
+      // --- derived ---
+      const display = derived(() => {
+        const s = remaining();
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+      });
+
+      const progress = derived(() => {
+        const total = DURATIONS[mode()];
+        return remaining() / total; // 1 → 0
+      });
+
+      // --- timer engine ---
+      let timer = null;
+
+      function tick() {
+        setRemain((r) => {
+          if (r <= 1) {
+            clearInterval(timer);
+            timer = null;
+            setRunning(false);
+            onComplete();
+            return 0;
+          }
+          return r - 1;
+        });
+      }
+
+      function start() {
+        if (remaining() === 0) return;
+        timer = setInterval(tick, 1000);
+        setRunning(true);
+      }
+
+      function pause() {
+        clearInterval(timer);
+        timer = null;
+        setRunning(false);
+      }
+
+      function resetTimer() {
+        pause();
+        setRemain(DURATIONS[mode()]);
+      }
+
+      function switchMode(m) {
+        pause();
+        setMode(m);
+        setRemain(DURATIONS[m]);
+      }
+
+      function skip() {
+        pause();
+        onComplete();
+      }
+
+      function onComplete() {
+        const m = mode();
+        if (m === "work") {
+          const next = sessions() + 1;
+          setSessions(next);
+          if (next >= GOAL) {
+            notify.success("Great work! Time for a long break.");
+            switchMode("long");
+          } else {
+            notify.success("Session done! Take a short break.");
+            switchMode("short");
+          }
+        } else {
+          if (mode() === "long") setSessions(0);
+          notify.success("Break over — let's focus!");
+          switchMode("work");
+        }
+      }
+
+      // --- effects ---
+      const C = 2 * Math.PI * 108; // circumference
+      const ring = document.getElementById("ring");
+      ring.style.strokeDasharray = C;
+
+      effect(() => {
+        document.getElementById("time").textContent = display();
+        document.getElementById("label").textContent = LABELS[mode()];
+        ring.style.strokeDashoffset = C * (1 - progress());
+
+        // body class for theme
+        document.body.classList.remove("short-break", "long-break");
+        if (mode() === "short") document.body.classList.add("short-break");
+        if (mode() === "long") document.body.classList.add("long-break");
+
+        // toggle button icon
+        document.getElementById("toggle").textContent = running() ? "⏸" : "▶";
+
+        // page title
+        document.title = `${display()} — ${LABELS[mode()]}`;
+      });
+
+      // session dots
+      effect(() => {
+        const dots = document.querySelectorAll("#sessions .dot");
+        dots.forEach((d, i) => d.classList.toggle("filled", i < sessions()));
+      });
+
+      // mode tab highlight
+      effect(() => {
+        document.querySelectorAll(".mode-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.mode === mode());
+        });
+      });
+
+      // --- controls ---
+      document
+        .getElementById("toggle")
+        .addEventListener("click", () => (running() ? pause() : start()));
+      document.getElementById("reset").addEventListener("click", resetTimer);
+      document.getElementById("skip").addEventListener("click", skip);
+
+      document
+        .querySelectorAll(".mode-btn")
+        .forEach((b) =>
+          b.addEventListener("click", () => switchMode(b.dataset.mode)),
+        );
+
+      // keyboard shortcuts
+      keys({ space: () => (running() ? pause() : start()) });
+      keys({ r: resetTimer });
+      keys({ s: skip });
+    </script>
+  </body>
+</html>
