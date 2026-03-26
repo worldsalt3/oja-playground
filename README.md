@@ -26,7 +26,7 @@ Built on Oja itself, the playground demonstrates the framework's capabilities wh
 
 <br>
 
-## ✨ Features
+## Features
 
 | Feature                 | Description                                                                |
 | ----------------------- | -------------------------------------------------------------------------- |
@@ -42,7 +42,7 @@ Built on Oja itself, the playground demonstrates the framework's capabilities wh
 
 <br>
 
-## 🚀 Getting Started
+## Getting Started
 
 No installation required. The playground runs entirely in the browser.
 
@@ -71,7 +71,7 @@ Then open `http://localhost:8000/playground/` in your browser.
 
 <br>
 
-## 📦 Examples
+## Examples
 
 The playground ships with 8 examples — click any to open it directly:
 
@@ -88,7 +88,7 @@ The playground ships with 8 examples — click any to open it directly:
 
 <br>
 
-## 🏗 Architecture
+## Architecture
 
 ```
 oja-playground/
@@ -123,7 +123,7 @@ oja-playground/
 
 <br>
 
-## ⚙️ How It Works
+## How It Works
 
 ```
 ┌─────────────┐     debounce      ┌───────────────┐
@@ -153,7 +153,7 @@ oja-playground/
 
 <br>
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Layer     | Technology                                                       |
 | --------- | ---------------------------------------------------------------- |
@@ -165,7 +165,7 @@ oja-playground/
 
 <br>
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests.
 
@@ -177,7 +177,7 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 
 <br>
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
 
