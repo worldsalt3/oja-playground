@@ -12,8 +12,6 @@ Write, edit, and preview Oja apps in real time. No install. No build step. Just 
 [![Oja](https://img.shields.io/badge/Oja-v0.0.10-388bfd)](https://github.com/agberohq/oja)
 [![Zero Build](https://img.shields.io/badge/build-zero-3fb950)]()
 
-[**Open Playground →**](https://agberohq.github.io/oja-playground/playground/)
-
 </div>
 
 ---
@@ -46,28 +44,18 @@ Built on Oja itself, the playground demonstrates the framework's capabilities wh
 
 No installation required. The playground runs entirely in the browser.
 
-### Option 1 — Use the hosted version
-
-Open [**oja-playground**](https://agberohq.github.io/oja-playground/playground/) in any modern browser.
-
-### Option 2 — Run locally
-
 ```bash
 git clone https://github.com/agberohq/oja-playground.git
 cd oja-playground
 ```
 
-Serve the directory with any static file server:
+Serve the directory with [Agbero](https://github.com/agberohq/agbero):
 
 ```bash
-# Python
-python -m http.server 8000
-
-# Node
-npx serve .
+agbero serve . --https
 ```
 
-Then open `http://localhost:8000/playground/` in your browser.
+Then open `https://localhost` in your browser and navigate to `/playground/`.
 
 <br>
 
